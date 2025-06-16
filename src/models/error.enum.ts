@@ -1,0 +1,21 @@
+export enum ErrorEnum {
+    codeIncorrect = 'Код недействителен!',
+    passPhoneIncorrect = 'Неверное имя пользователя или пароль!',
+    nameUsed = 'Это имя занят!',
+    EmployeeComp = 'У сотрудника уже есть компьютер!',
+    phoneUsed = 'Этот телефон номер уже используется!',
+    UserNotFound = 'Пользователь не найден!',
+    NotFound = 'Не найден!',
+    token = 'Требуется токен!',
+    permission_access = 'У вас нет разрешения на доступ!',
+    language = 'language is required!',
+    invalidData = 'Неверные данные!',
+    errorServer = 'Internal server error!',
+    equalPasswords = 'Пароль и повторный пароль не совпадают!',
+    Unauthorized = 'Unauthorized',
+    roleUsed = 'Эта роль используется персоналом',
+    invalidSsenariyId = 'Неверный ssenariy id',
+    templateIdOrContent = 'Content или template_id не должен быть пустым',
+    ssenariyNotification = 'Тип сценария должен быть notification',
+    noActiveSsenaries = 'Нет активных сценариев'
+}
