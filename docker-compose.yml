@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: permissions_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - permissions_network
+
+  nats:
+    image: nats:2.10-alpine
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: ["--jetstream", "--store_dir", "/data"]
+    volumes:
+      - nats_data:/data
+    networks:
+      - permissions_network
+
+  permissions-service:
+    build: .
+    depends_on:
+      - postgres
+      - nats
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=permissions_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - NATS_URL=nats://nats:4222
+      - LOG_LEVEL=info
+    networks:
+      - permissions_network
+
+volumes:
+  postgres_data:
+  nats_data:
+
+networks:
+  permissions_network:
+    driver: bridge

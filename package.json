@@ -1,0 +1,29 @@
+{
+  "name": "permissions-service",
+  "version": "1.0.0",
+  "description": "Microservice for managing permissions with NATS and PostgreSQL",
+  "main": "dist/lib.js",
+  "types": "dist/lib.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test:client": "ts-node scripts/test-client.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["permissions", "microservice", "nats", "postgresql"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "nats": "^2.28.2",
+    "pg": "^8.16.0",
+    "winston": "^3.14.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/pg": "^8.11.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}
