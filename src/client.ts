@@ -7,7 +7,9 @@ import {
   SuccessResponse,
   CheckResponse,
   ListResponse,
-  ErrorResponse
+  ErrorResponse,
+  ModuleName,
+  MODULES
 } from './types';
 
 export * from './types';
@@ -25,7 +27,8 @@ export class PermissionsClient {
     return new PermissionsClient(connection);
   }
 
-  async grant(request: GrantRequest): Promise<SuccessResponse> {
+  // Strongly typed grant method that enforces module-action relationship
+  async grant<M extends ModuleName>(request: GrantRequest<M>): Promise<SuccessResponse> {
     const response = await this.natsConnection.request(
       'permissions.grant',
       this.codec.encode(JSON.stringify(request)),
@@ -41,7 +44,8 @@ export class PermissionsClient {
     return result as SuccessResponse;
   }
 
-  async revoke(request: RevokeRequest): Promise<SuccessResponse> {
+  // Strongly typed revoke method
+  async revoke<M extends ModuleName>(request: RevokeRequest<M>): Promise<SuccessResponse> {
     const response = await this.natsConnection.request(
       'permissions.revoke',
       this.codec.encode(JSON.stringify(request)),
@@ -57,7 +61,8 @@ export class PermissionsClient {
     return result as SuccessResponse;
   }
 
-  async check(request: CheckRequest): Promise<CheckResponse> {
+  // Strongly typed check method
+  async check<M extends ModuleName>(request: CheckRequest<M>): Promise<CheckResponse> {
     const response = await this.natsConnection.request(
       'permissions.check',
       this.codec.encode(JSON.stringify(request)),
@@ -97,6 +102,17 @@ export class PermissionsClient {
 // Helper functions
 export const createPermissionsClient = PermissionsClient.create;
 
-export const isErrorResponse = (response: any): response is ErrorResponse => {
-  return response && response.error && response.error.code && response.error.message;
+export const isErrorResponse = (response: unknown): response is ErrorResponse => {
+  return Boolean(
+    response && 
+    typeof response === 'object' && 
+    'error' in response && 
+    response.error &&
+    typeof response.error === 'object' &&
+    'code' in response.error && 
+    'message' in response.error
+  );
 };
+
+// Export module constants for easy usage
+export { MODULES };

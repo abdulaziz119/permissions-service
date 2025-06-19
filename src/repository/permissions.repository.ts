@@ -1,10 +1,19 @@
 import { pgPoolQuery } from '../database';
 import { logger } from '../utils/logger';
-import { ErrorCode, Permission } from '../types';
+import { ErrorCode, Permission, ModuleName, DatabaseRow } from '../types';
+
+interface PermissionRow extends DatabaseRow {
+  module: string;
+  action: string;
+}
 
 export class PermissionsRepository {
   
-  async grantPermission(apiKey: string, module: string, action: string): Promise<void> {
+  async grantPermission<M extends ModuleName>(
+    apiKey: string, 
+    module: M, 
+    action: string
+  ): Promise<void> {
     const query = `
       INSERT INTO permissions (api_key, module, action)
       VALUES ($1, $2, $3)
@@ -20,7 +29,11 @@ export class PermissionsRepository {
     }
   }
 
-  async revokePermission(apiKey: string, module: string, action: string): Promise<void> {
+  async revokePermission<M extends ModuleName>(
+    apiKey: string, 
+    module: M, 
+    action: string
+  ): Promise<void> {
     const query = `
       DELETE FROM permissions 
       WHERE api_key = $1 AND module = $2 AND action = $3
@@ -41,7 +54,11 @@ export class PermissionsRepository {
     }
   }
 
-  async checkPermission(apiKey: string, module: string, action: string): Promise<boolean> {
+  async checkPermission<M extends ModuleName>(
+    apiKey: string, 
+    module: M, 
+    action: string
+  ): Promise<boolean> {
     const query = `
       SELECT 1 FROM permissions 
       WHERE api_key = $1 AND module = $2 AND action = $3
@@ -66,11 +83,11 @@ export class PermissionsRepository {
     `;
     
     try {
-      const result = await pgPoolQuery(query, [apiKey]);
-      return result.rows.map((row: any) => ({
-        module: row.module,
+      const result = await pgPoolQuery<PermissionRow>(query, [apiKey]);
+      return result.rows.map((row) => ({
+        module: row.module as ModuleName,
         action: row.action
-      }));
+      })) as Permission[];
     } catch (error) {
       logger.error('Failed to list permissions', { apiKey, error });
       throw error;

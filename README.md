@@ -168,24 +168,39 @@ nats req permissions.revoke '{"apiKey": "test-key", "module": "trades", "action"
 
 ## Использование клиентской библиотеки
 
+### Строго типизированное использование
+
 ```typescript
-import { PermissionsClient, ErrorCode } from './src/client';
+import { PermissionsClient, MODULES, ErrorCode } from './src/client';
 
 async function example() {
   const client = await PermissionsClient.create('nats://localhost:4222');
   
   try {
-    // Grant permission
+    // ✅ Валидные комбинации (TypeScript разрешает)
     await client.grant({
       apiKey: 'my-api-key',
-      module: 'trades',
-      action: 'create'
+      module: MODULES.TRADES,
+      action: 'create' // ✅ Валидно для TRADES
     });
+    
+    await client.grant({
+      apiKey: 'my-api-key', 
+      module: MODULES.INVENTORY,
+      action: 'read' // ✅ Валидно для INVENTORY
+    });
+    
+    // ❌ Невалидные комбинации (TypeScript ошибка компиляции)
+    // await client.grant({
+    //   apiKey: 'my-api-key',
+    //   module: MODULES.TRADES,
+    //   action: 'read' // ❌ Ошибка: 'read' недоступен для модуля TRADES
+    // });
     
     // Check permission
     const result = await client.check({
       apiKey: 'my-api-key',
-      module: 'trades', 
+      module: MODULES.TRADES, 
       action: 'create'
     });
     
@@ -204,6 +219,29 @@ async function example() {
   }
 }
 ```
+
+### Доступные модули и действия
+
+```typescript
+// TRADES модуль
+MODULES.TRADES: 'create' | 'create_manual'
+
+// INVENTORY модуль  
+MODULES.INVENTORY: 'create' | 'read' | 'update' | 'delete'
+
+// ORDERS модуль
+MODULES.ORDERS: 'create' | 'read' | 'update' | 'cancel' 
+
+// REPORTS модуль
+MODULES.REPORTS: 'read' | 'export'
+```
+
+### Преимущества типизации
+
+1. **Компиляционная безопасность**: TypeScript предотвращает использование недопустимых комбинаций модуль-действие
+2. **IntelliSense**: Автодополнение доступных действий для каждого модуля
+3. **Рефакторинг**: Безопасное переименование модулей и действий
+4. **Документация**: Типы служат живой документацией API
 
 ## Обработка ошибок
 

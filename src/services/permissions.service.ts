@@ -1,8 +1,7 @@
 import { PermissionsRepository } from '../repository/permissions.repository';
 import { CacheService } from './cache.service';
 import { logger } from '../utils/logger';
-import { 
-  Permission, 
+import {
   ErrorCode, 
   GrantRequest, 
   RevokeRequest, 
@@ -10,7 +9,8 @@ import {
   ListRequest,
   SuccessResponse,
   CheckResponse,
-  ListResponse
+  ListResponse,
+  ModuleName
 } from '../types';
 
 export class PermissionsService {
@@ -27,7 +27,7 @@ export class PermissionsService {
     logger.info('Permissions service initialized');
   }
 
-  async grant(request: GrantRequest): Promise<SuccessResponse> {
+  async grant<M extends ModuleName>(request: GrantRequest<M>): Promise<SuccessResponse> {
     try {
       this.validateRequest(request, ['apiKey', 'module', 'action']);
       
@@ -47,7 +47,7 @@ export class PermissionsService {
     }
   }
 
-  async revoke(request: RevokeRequest): Promise<SuccessResponse> {
+  async revoke<M extends ModuleName>(request: RevokeRequest<M>): Promise<SuccessResponse> {
     try {
       this.validateRequest(request, ['apiKey', 'module', 'action']);
       
@@ -67,7 +67,7 @@ export class PermissionsService {
     }
   }
 
-  async check(request: CheckRequest): Promise<CheckResponse> {
+  async check<M extends ModuleName>(request: CheckRequest<M>): Promise<CheckResponse> {
     try {
       this.validateRequest(request, ['apiKey', 'module', 'action']);
       
@@ -131,9 +131,10 @@ export class PermissionsService {
     }
   }
 
-  private validateRequest(request: any, requiredFields: string[]): void {
+  private validateRequest(request: unknown, requiredFields: string[]): void {
+    const req = request as Record<string, unknown>;
     for (const field of requiredFields) {
-      if (!request[field] || typeof request[field] !== 'string' || request[field].trim() === '') {
+      if (!req[field] || typeof req[field] !== 'string' || (req[field] as string).trim() === '') {
         throw {
           code: ErrorCode.INVALID_PAYLOAD,
           message: `Missing or invalid field: ${field}`

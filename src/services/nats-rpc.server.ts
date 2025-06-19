@@ -1,4 +1,4 @@
-import { connect, NatsConnection, StringCodec } from 'nats';
+import { connect, NatsConnection, StringCodec, Msg, NatsError } from 'nats';
 import { PermissionsService } from '../services/permissions.service';
 import { logger } from '../utils/logger';
 import { ErrorCode, ErrorResponse } from '../types';
@@ -40,7 +40,7 @@ export class NatsRpcServer {
 
     // permissions.grant
     this.natsConnection.subscribe('permissions.grant', {
-      callback: async (err, msg) => {
+      callback: async (err: NatsError | null, msg: Msg) => {
         if (err) {
           logger.error('Error in permissions.grant subscription', { error: err });
           return;
@@ -61,7 +61,7 @@ export class NatsRpcServer {
 
     // permissions.revoke
     this.natsConnection.subscribe('permissions.revoke', {
-      callback: async (err, msg) => {
+      callback: async (err: NatsError | null, msg: Msg) => {
         if (err) {
           logger.error('Error in permissions.revoke subscription', { error: err });
           return;
@@ -82,7 +82,7 @@ export class NatsRpcServer {
 
     // permissions.check
     this.natsConnection.subscribe('permissions.check', {
-      callback: async (err, msg) => {
+      callback: async (err: NatsError | null, msg: Msg) => {
         if (err) {
           logger.error('Error in permissions.check subscription', { error: err });
           return;
@@ -103,7 +103,7 @@ export class NatsRpcServer {
 
     // permissions.list
     this.natsConnection.subscribe('permissions.list', {
-      callback: async (err, msg) => {
+      callback: async (err: NatsError | null, msg: Msg) => {
         if (err) {
           logger.error('Error in permissions.list subscription', { error: err });
           return;
@@ -125,12 +125,12 @@ export class NatsRpcServer {
     logger.info('RPC subscriptions set up successfully');
   }
 
-  private createErrorResponse(error: any): ErrorResponse {
-    if (error && error.code && error.message) {
+  private createErrorResponse(error: unknown): ErrorResponse {
+    if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
       return {
         error: {
-          code: error.code,
-          message: error.message
+          code: (error as { code: ErrorCode }).code,
+          message: (error as { message: string }).message
         }
       };
     }

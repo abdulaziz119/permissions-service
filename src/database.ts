@@ -1,7 +1,7 @@
-import { Pool } from 'pg';
+import { Pool, QueryResult as PgQueryResult } from 'pg';
 import * as dotenv from 'dotenv';
 import { logger } from './utils/logger';
-import { ErrorCode } from './types';
+import { ErrorCode, QueryResult, DatabaseRow } from './types';
 
 dotenv.config();
 
@@ -16,10 +16,16 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-export const pgPoolQuery = async (sql: string, params?: any[]): Promise<any> => {
+export const pgPoolQuery = async <T extends DatabaseRow = DatabaseRow>(
+  sql: string, 
+  params?: unknown[]
+): Promise<QueryResult<T>> => {
   try {
-    const result = await pool.query(sql, params);
-    return result;
+    const result: PgQueryResult<T> = await pool.query(sql, params);
+    return {
+      rows: result.rows,
+      rowCount: result.rowCount || 0
+    };
   } catch (error) {
     logger.error('Database query error', { sql, params, error });
     throw {
